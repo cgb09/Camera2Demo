@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBlack"
+    tools:context=".MainActivity">
+
+    <com.example.nan.AutoFitTextureView
+        android:id="@+id/preview_texture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="60dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="top"
+        android:background="@color/just_gray_alpha">
+
+        <com.example.nan.TwoStateSwitch
+            android:id="@+id/flash_switch"
+            app:imageOff="@mipmap/flash_off"
+            android:padding="5dp"
+            android:background="@drawable/drawable_top_click"
+            app:imageOn="@mipmap/flash_on"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="5dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/bt_switch"
+            android:layout_marginTop="1dp"
+            android:text="4:3"
+            android:layout_marginLeft="15dp"/>
+
+        <ImageView
+            android:id="@+id/settings"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:padding="5dp"
+            android:background="@drawable/drawable_top_click"
+            android:src="@mipmap/settings"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="20dp"
+        android:background="@color/just_gray_alpha">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/take_picture"
+                android:layout_width="wrap_content"
+                android:text="@string/take_picture"
+                android:textSize="15sp"
+                android:textColor="@color/circle_color_thumbnail"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/take_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/take_video"
+                android:textColor="@color/circle_color_thumbnail"
+                android:textSize="15sp"/>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="30dp">
+
+            <com.example.nan.RoundImageView
+                android:id="@+id/iv_goto_gallery"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="30dp"
+                android:padding="1dp" />
+
+            <Button
+                android:id="@+id/takePicture"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/camera_btn" />
+
+            <ImageView
+                android:id="@+id/change_camera_id"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="40dp"
+                android:background="@drawable/drawable_change_id"
+                android:src="@mipmap/change_id" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+
+</FrameLayout>

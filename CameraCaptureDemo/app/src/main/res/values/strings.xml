@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">相机</string>
+    <string name="take_picture">拍照</string>
+    <string name="sixteen_nine">16:9</string>
+    <string name="four_third">4:3</string>
+    <string name="change_camera_id">切换摄像头</string>
+    <string name="open_flash">开闪光灯</string>
+    <string name="close_flash">关闪光灯</string>
+</resources>
