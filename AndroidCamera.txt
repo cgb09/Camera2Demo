@@ -1,0 +1,555 @@
+Android基础：
+1，Android四层架构介绍：
+参考链接：https://www.cnblogs.com/loaderman/p/6430421.html?utm_source=itdadao&utm_medium=referral
+(1),Applications-各种手机应用，运行在虚拟机上
+(2),Application framework--google提供的开发应用的API框架
+(3),libraries--系统提供的库，供调用，比如SQLite,Opengl es;Dalvik虚拟机-一个应用一个虚拟机
+(4),linux kernel--相机驱动，Binder IPC驱动提供进程间通讯
+
+2，Android四大组件介绍：
+  (1)Activity生命周期介绍:
+  生命周期：参考链接：https://blog.csdn.net/ican87/article/details/21874447
+     七个生命周期方法：onCreate,onStart,onResume,onPause,onStop,onDestroy,onRestart
+         按Home键Activity生命周期：
+		    onPause,onStop,然后点击进入：onRestart,onStart,onResume,杀死进程：onDestroy  
+         一个MainActivity跳转到另一个SecondActivity:
+             MainActivity onPause
+             SecondActivity onCreate
+             SecondActivity onStart
+             SecondActivity onResume
+             MainActivity onStop
+             从SecondActivity返回到MainActivity:
+             SecondActivity onPause
+             MainActivity onRestart
+             MainActivity onStart
+             MainActivity onResume
+             SecondActivity onStop
+             SecondActivity onDestroy
+   Activity四种启动模式:
+   参考链接：https://blog.csdn.net/elisonx/article/details/80397519
+   四种启动模式：
+       Standard--默认启动模式-每次启动该Activity，都创建新的Activity
+	   SingleTop--单顶-栈顶复用栈中已有Activity(onNewIntent调用)，不在栈顶再创建新的Activity
+	            --应用场景：需重新启动自身，节省内存
+	   SingleTask--单任务-弹出其它，使其处于栈顶
+	             --应用场景：保持我们应用开启后仅仅有一个Activity的实例，比如首页，相机主Activity
+	   SingleInstance-单例-单独为其创建栈--锁屏键的应用，普通应用不用
+	启动模式设置方式：
+	   Manifest.xml中指定
+	   Intent中指定
+   两种启动方式的区别：
+      （1）优先级：Intent中指定优先级更高
+      （2）限定范围：
+	     第一种方式无法为Activity直接指定FLAG_ACTIVITY_CLEAR_TOP标识
+		 第二种方式无法为Activity指定 singleInstance 模式
+  (2)Service的介绍：
+  参考链接：
+      https://www.runoob.com/android/android-services.html
+	  https://blog.csdn.net/qq_27061049/article/details/109366345
+  一个后台运行的组件，执行长时间运行且不需要用户交互的任务,运行在主线程
+  Service并不是运行在一个独立的进程当中的，而是依赖于创建服务时所在的应用程序进程。
+  当某个应用程序进程被杀掉时，所有依赖于该进程的服务也会停止运行。
+  包括两类：
+     本地service：就是和当前应用在同一个进程中的service
+	 远程service：主要牵扯到不同进程间的service访问--通信方式工具
+  服务的两种状态及生命周期：
+       startService()启动了服务,执行单一操作，而且不会将结果返回给调用方
+	        --onCreate,onStart/onStartCommand,onDestroy 
+       bindService()绑定了服务，可以与服务进行交互,多个组件可以同时绑定到该服务,全部取消绑定后，该服务即会被销毁
+	        --onCreate,onBind,onUnbind,onRebind,onDestroy 
+  两种启动方式：显示启动，隐示启动：		
+	     如果在同一个应用中，两者都可以用。在不同应用时，只能用隐式启动。
+  (3)BroadcastReceiver的介绍：
+      参考链接：https://www.cnblogs.com/ryq2014/p/10184555.html
+	  Android组件间的通信方式。 
+	  Android广播分为两个方面：广播发送者和广播接收者
+      两种注册类型：AndroidManifest.xml静态注册和代码动态注册
+	  备注：android 8.0（API26）开始，对清单文件中静态注册广播接收者增加了限制，
+	        发送广播时需添加设置：intent.setClassName(this,"com.example.bbreceiver.AReciver");
+      根据广播的发送方式，广播分类：普通广播，系统广播，有序广播
+      生命周期只有十秒左右，如果在onReceive()内做超过十秒内的事情，就会报ANR(Application No Response)程序无响应的错误信息。它的生命周期为从回调onReceive()方法开始到该方法返回结果后结束
+  (4)ContentProvider简介--ContentResolver
+      用来将本应用数据暴露给另一个应用访问的工具
+3，LinearLayout/RelativeLayout/FrameLayout常用布局，EditText/Button/TextView常用控件：
+   LinearLayout--线性布局
+   RelativeLayout--相对布局
+   FrameLayout--帧布局
+4,Android数据的四大存储方式：
+   （1）SharedPreference存储--相机里面设置参数存储--data/data/
+   （2）ContentProvider--相机缩略图-ContentResolver
+   （3）文件存储--data/SDCard
+   （4）Sqlite数据库存储
+5，Handler的用法介绍：
+  参考链接：https://www.cnblogs.com/zhoug2020/p/12841311.html
+  作用：子线程发送消息给主线程或者主线程发送消息给子线程或任意两个线程之间的通信
+  原理：
+     MessageQueue--消息队列存放消息
+	 Looper--查找消息队列
+	 Hanlder发送和处理消息
+	 Message消息
+	 一个线程里面可以有多个Handler，有1个looper，有1个MessageQueue
+6,自定义View流程介绍：
+  分类：1,继承View,包括继承具体View比如Button,TextView 
+        2,继承ViewGroup，,包括继承具体ViewGroup比如LinearLayout
+     继承View/Button:选择实现onMeasure，必须实现onDraw
+     继承ViewGroup/LinearLayout:必须实现onMeasure,必须实现onLayout，不用实现onDraw
+	 xml中设置的View的宽高，可以通过两种方式拿到：
+	 （1），onSizeChanged()
+	 （2），onMeasure()--MeasureSpec.getSize(widthMeasureSpec)，MeasureSpec.getSize(heightMeasureSpec)，
+	                     getMeasuredWidth/getMeasuredHeight
+	widthMeasureSpec/heightMeasureSpec里面封装了两个参数一共是mode,一个是size
+7，动画介绍
+  分类：帧动画，补间动画，属性动画
+  属性动画包括：ObjectAnimator和ValueAnimator
+8，事件分发机制介绍
+   主要处理对屏幕的点击滑动等事件：
+   Activity--dispatchTouchEvent，onTouchEvent
+   ViewGroup--dispatchTouchEvent，onInterceptTouchEvent,onTouchEvent
+   View--dispatchTouchEvent,onTouchEvent
+9，线程相关知识介绍：线程创建，多线程实现，线程生命周期
+  参考链接：
+      https://www.runoob.com/note/34745
+	  https://www.cnblogs.com/java1024/archive/2019/11/28/11950129.html
+	  https://www.cnblogs.com/moongeek/p/7631447.html
+	  https://www.cnblogs.com/wugongzi/p/11994825.html
+	线程是一个独立的程序单元，可设置优先级
+	线程实现方式：
+	    一种是继承 Thread 类，另一种就是实现 Runnable 接口
+	线程共包括以下 5 种状态:
+        1. 新建状态(New): 线程对象被创建后，就进入了新建状态。例如，Thread thread = new Thread()。
+        2. 就绪状态(Runnable): 也被称为“可执行状态”。线程对象被创建后，其它线程调用了该对象的start()方法，从而来启动该线程。例如，thread.start()。处于就绪状态的线程，随时可能被CPU调度执行。
+        3. 运行状态(Running): 线程获取CPU权限进行执行。需要注意的是，线程只能从就绪状态进入到运行状态。
+        4. 阻塞状态(Blocked): 阻塞状态是线程因为某种原因放弃CPU使用权，暂时停止运行。直到线程进入就绪状态，才有机会转到运行状态。阻塞的情况分三种： 
+            (01) 等待阻塞 -- 通过调用线程的wait()方法，让线程等待某工作的完成。
+            (02) 同步阻塞 -- 线程在获取synchronized同步锁失败(因为锁被其它线程所占用)，它会进入同步阻塞状态。
+            (03) 其他阻塞 -- 通过调用线程的sleep()或join()或发出了I/O请求时，线程会进入到阻塞状态。当sleep()状态超时、join()等待线程终止或者超时、或者I/O处理完毕时，线程重新转入就绪状态。
+        5. 死亡状态(Dead): 线程执行完了或者因异常退出了run()方法，该线程结束生命周期  
+      常用方法：
+	      join() --线程强制运行
+	      sleep()--线程休眠
+	      interrupt()--中断线程执行
+		  yield()--暂停当前线程，让别的线程先执行
+	      wait()--线程等待
+	      notify()--唤醒等待线程
+	  几种锁：
+	  线程同步：
+	     synchronized 修饰同步代码块或者同步方法
+10，常用设计模式介绍
+   参考链接：https://www.jianshu.com/p/cb2d09c356ba
+   单例，工厂，装饰，模板方法，观察者，建造者模式，策略者模式，适配器模式
+   单例模式：
+       希望对象只创建一个实例，并且提供一个全局的访问点
+       骁龙相机：SettingsManager getInstance()；
+	   
+11，内存泄露和内存溢出OOM介绍，四大引用，bitmap大图片加载
+  参考链接：https://www.cnblogs.com/andashu/p/6440944.html
+  内存泄漏：应该被回收的对象，因为有其他对象引用，导致不能及时回收就造成内存泄漏
+  内存溢出OOM：要申请内存大于系统剩余内存，就会报OOM.
+  四大引用：强引用，软引用，弱引用，虚引用
+  防止方法：
+      1，Handler引起的内存泄漏--Handler用自定义静态内部类方式创建并弱引用Activity，在退出Activity时调用removeCallbacksAndMessages
+	  2，单例模式引起的内存泄漏--引用ApplicationContext
+	  3，非静态内部类创建静态实例引起的内存泄漏--改为静态内部类
+	  4，非静态匿名内部类引起的内存泄漏
+	  5，注册/反注册未成对使用引起的内存泄漏
+	  6，资源对象没有关闭引起的内存泄漏
+	  7，集合对象没有及时清理引起的内存泄漏
+12，ANR介绍
+  参考链接：https://www.jianshu.com/p/388166988cef
+  Application no response应用无响应
+  原因：
+     在主线程进行耗时操作
+	 锁竞争--camera里面常见
+	 死锁
+	  
+	 InputDispatching Timeout：5秒内无法响应屏幕触摸事件或键盘输入事件
+	 BroadcastQueue Timeout ：在执行前台广播（BroadcastReceiver）的onReceive()函数时10秒没有处理完成，后台为60秒。
+	 Service Timeout ：前台服务20秒内，后台服务在200秒内没有执行完毕。
+	 ContentProvider Timeout ：ContentProvider的publish在10s内没进行完。
+  防止方法： 
+     1，UI线程只做UI相关工作
+	 2，耗时操作开辟单独线程
+  分析：
+      traces.txt文件
+13.性能优化
+参考链接：https://blog.csdn.net/weixin_33937499/article/details/87957303
+          https://www.jianshu.com/p/797395731747
+	（1）内存优化
+    （2）布局优化
+		    使用RelativeLayout代替LinearLayout避免嵌套
+			减少View树的层数
+			<include>
+			<viewStub>
+			<merge>
+    （3）Bitmap优化
+14，内存优化
+参考链接：https://www.cnblogs.com/renhui/p/11761586.html
+定义：优化处理应用程序的内存使用，空间占用。
+处理： 内存抖动、内存泄漏、内存溢出，内存占用空间过大Bitmap
+Android内存管理机制：
+  对进程，对象，变量进行内存分配和回收。
+  AppFrameWork和Linux内核负责进程内存管理
+  Dalvik虚拟机负责对象和变量内存管理
+进程：
+  ActivityManagerService 集中管理 所有进程的内存分配
+  Application Framework 决定回收的进程类型
+  Android中的进程 是托管的；当进程空间紧张时，会 按进程优先级低->>高的顺序 自动回收进程
+  Linux 内核真正回收具体进程
+对象，变量：
+   静态分配--静态变量--静态存储区-常量，静态变量 
+   栈式分配--局部变量--栈区
+   堆式分配--对象实例--堆区
+优化方案：
+   Bitmap:分辨率适配和缩放图片
+   内存抖动：尽量避免频繁创建大量、临时的小对象
+   Bitmap使用结束后需要手动回收，通过调用其recycle方法来进行回收（Bitmap是最容易造成内存泄漏的）
+   使用静态方法，静态方法的速度比普通方法快15%（工具类或者常量表可使用静态方法）
+   减少成员变量，使用局部变量替换掉只使用过一次的成员变量
+   尽量不要使用枚举类和迭代器（枚举类占用内存远大于常量表）
+   对于部分需要回收的类，使用后一定要关闭、回收或者解除注册，例如Cursor、Receiver、Sensor、File、IO等对象
+   避免使用IOC框架，大量使用反射依然会造成性能下降，内存消耗较大
+   使用RenderScript、OpenGL来进行非常复杂的绘图操作
+   尽量使用Holder对视图进行缓存，而不是重复执行inflate方法解析视图
+   除非必要尽量少使用Activity的context，实用Application的Context替代，避免Activity被其他类持有造成无法回收从而导致内存泄漏
+   静态类中应该避免持有Activity的context，导致context无法回收
+   Task及其子类（TimerTask，AsyncTask等）无论是否用于循环，都需要在执行结束后或者Activity生命周期结束后被Cancle掉,否则会造成内存泄漏
+   动画在Activity生命周期结束后也需要cancle
+   WebViwe在加载网页后会长期占有内存，需要在Activity生命周期结束后调用其destroy方法来进行销毁
+   线程在执行结束后需要对其进行关闭，且线程数量不易过多，必要时通过线程池来管理线程
+   通过Activity的Recreate方法来重启Activity时应该先移除之前的Fragment避免创建重复的Fragment导致内存泄漏
+   使用较少的工具类尽量使用单例模式,少用static类,以减少不必要的类加载
+   在AndroidMainifest中为主Activity加上clearTaskOnLaunch标签,这样一旦返回到主Activity时就销毁其他所有Activity,避免内存泄漏
+   对于一些不必要长期持有的类,我们可以通过弱引用和软引用来减少内存占用
+15，跨进程通信有四种方式，分别对应着四大组件：
+     Activity：指定的是要访问的Activity所对应的Action（一个字符串）。
+	           有些Activity还需要指定一个Uri（通过 Intent构造方法的第2个参数指定）。
+     Broadcast：广播是一种被动跨进程通讯的方式。通过Intent对象可以发送需要广播的数据。
+     Service：通过AIDL实现，AIDL的全称是Android Interface Definition Language。
+     ContentProvider：Android应用程序可以使用文件或SqlLite数据库来存储数据。
+	 Content Provider提供了一种在多个应用程序之间数据共享的方式（跨进程共享数据）。
+	 应用程序可以利用Content Provider完成：查询数据，修改数据，添加数据，删除数据
+     Content Provider存在的目的向其他应用程序共享数据和允许其他应用程序对数据进行增、删、改操作。
+16，Surface,View，SurfaceView，Textureview，SurfacaeTexture，GLsurfaceview三者的区别--opengl es
+        Surface,一个window都有自己的一个surface，
+		     该对象持有一群像素（pixels），这些像素是要被组合到一起显示到屏幕上的
+        View,显示视图，View必须附着在Window，
+		   内置画布，处理事件，UI线程更新，速度较慢
+	    SurfaceView，继承自View,不能设置透明度,平移动画，
+		             开辟新窗口window，拥有独立的Surface,
+             		双缓冲机制,允许子线程更新，刷新速度快，它在需要渲染时，内容会变得完全透明，view部分只是一个透明的占位符
+        GlSurfaceView，拥有 SurfaceView 全部特性，封装EGL环境，
+		            专门用于opengl渲染，具有独立的渲染线程，它在需要渲染时，内容会变得完全透明，view部分只是一个透明的占位符
+	    SurfacaeTexture: 对图像流的处理并不直接显示，而是转为 GL 外部纹理，
+        TextrueView:支持View属性设置，比如透明度，平移，设置，它在需要渲染时，内容会变得完全透明，view部分只是一个透明的占位符
+	备注：
+	    android graphics主要干了2件事：
+         一个是画图，一个是合成显示。
+         1.画图
+            两种方式将图像绘制在屏幕上， Canvas 和 opengl
+            canvas：用于绘制 原生和 自定义View
+            通过OpenglRender，将canvas画的图，转换为opengl 运算，再通过surface进行渲染，通过GPU去显示
+            opengl ：直接通过surface进行渲染，通过GPU去显示
+            无论开发者使用什么渲染 API，一切内容都会渲染到“Surface”
+         2.显示
+            window
+            Window有三种类型，分别是ApplicationWindow，ChildrenWindow 和SystemWindow 
+            Application Window 对应一个 Acitivity
+            Children Window不能单独存在，需要依附在特定的父 Window 中，比如常见的一些 Dialog 就是一个子 Window
+            System Window 需要声明权限才能创建的Window，比如 Toast 和系统状态栏都是系统 Window。悬浮框就是通过这个属性创建的
+            另外Window 是分层的，每个 Window 都有对应的 z-ordered，层级大的会覆盖在层级小的 Window 上面。
+            Application Window层级范围是 1~99
+            Children Window 层级范围是 1000~1999
+            System Window 层级范围是 2000~2999
+            View Hierarch
+            用来组织一个window上的所有view的显示，一个window只有一个View Hierarch
+            WindowManager
+            管理系统中的所有Window,一块块的Window,在WindowManager的管理下有序的排列在屏幕上，Android 才得以呈现出多姿多彩的界面 。
+            WindowManager会监督生命周期、输入和聚焦事件、屏幕方向、转换、动画、位置、变形、Z-Order 以及窗口的其他许多事件
+            SurfaceFlinger
+            管理消耗当前可见的surface，所有被渲染的可见 Surface 都被 SurfaceFlinger，通过window manager 提供的信息合成到显示部分
+17,JNI编程--java native interface，java和c互调，一般用来集成三方算法库
+18,MVP/MVC/MVVM介绍
+    
+
+​	
+
+
+​	
+​	
+Camera基础:
+1，常用API类介绍
+CameraManager,CameraDevice,CameraCharacteristics,CameraCaptureSession,
+StreamConfigurationMap,ImageReader,CaptureRequest,CaptureResult
+2，起预览流程代码实现
+CameraManager--opencamera()--CameraId
+onOpened()--CameraDevice
+CameraDevice--createCaptureSession--Surface(width,height)
+onConfigured--CameraCaptureSession
+CameraCaptureSession.setRepeatingRequest--template_preview
+3句句句句·，拍照流程代码实现
+CameraCaptureSession.captue()--template_capture
+4，录像流程代码实现
+录像流程描述：
+录像是按照google官方demo实现的，点击开始录像，
+会先关闭预览session，然后初始化MediaRecorder,
+再创建录像session,录像session会下发预览Surface和MediaRecorder.Surface两路流，
+所用模板为template_recorde,调用MediaRecorder.start()开始录像。   
+停止录像调用MediaRecorder.reset及stop,然后重新创建预览session
+5，如何下发参数，如何获取底层返回参数：
+   如下发闪光灯的打开和关闭，对焦模式下发及获取AF/AE状态
+   CaptureRequest.Builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+   CaptureRequest.Builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+   CaptureRequest.Builder.set(CaptureRequest.SENSOR_SENSITIVITY, 100);
+   CaptureRequest.Builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, 100l);
+   Integer afState = CaptureResult.get(CaptureResult.CONTROL_AF_STATE);
+6，录像拍照模式切换实现
+关闭拍照相机id，关闭Session,重新打开录像相机ID
+7，4:3/16:9分辨率切换实现
+同时修改切换预览View和预览Surface的宽高
+8,拍照缩略图生成实现
+将底层返回数据转换为Bitmap,然后更新UI
+9，点击缩略图进入相册实现积极
+启动打开图库包名的Activity，传递对应的图片Uri
+10，拍照方向实现
+通过手机方向传感器获取手机方向，然后根据手机方向设置拍照的CaptureRequest.JPEG_ORIENTATION
+11，水印功能实现
+用过canvas画水印数据到底层返回的图片数据，然后保存图片数据
+12，图片格式种类介绍
+jpeg--ImageFormat.JPEG,yuv--ImageFormat.YUV_420_888,raw--ImageFormat.RAW_SENSOR
+13，Surface，SurfaceTexture,ImagerReader.Surface,MediaRecorder.Surface几个Surface的区别
+   Surface--一个buffer,用来存放图片数据
+   SurfaceTexture--用来将图片数据变成纹理供opengl es绘制
+   ImagerReader.Surface--用来获取拍照数据
+   MediaRecorder.Surface--用来获取录像数据
+14、yuv、jpeg、bitmap的区别
+yuv--一种颜色编码格式，Y代表亮度信息（灰度），UV分别代表色彩信息
+jpeg--一种图像压缩标准,保存的是被压缩处理过的图片数据
+bitmap--图片在内存中的表示方式--位图
+raw--未经压缩处理的，sensor只出图像数据
+15.YUV和NV21格式的区别
+参考链接：https://blog.csdn.net/sslinp/article/details/83417711
+YUV_420_888--android yuv通用格式
+NV21是yuv_420的一种，实际项目中，拿到YUV数据，需转换为NV21，然后传给算法处理
+16、JIN简单介绍（提高部分）
+  java native interface,作用：java 和C互调
+17，骁龙相机代码走读（提高部分）
+  先看xml，启动的哪个Activity,然后找对应的UI，之后看对应的打开相机流程，拍照流程，录像流程 
+18，4：3、16：9预览拉伸变形如何处理
+需保证TextureView和预览Surface的宽高比一致
+19，自己实现的camera应用中用到几个线程
+两个，一个UI线程，一个相机操作线程
+20，16:9和4:3哪个视角更大
+ 4：3视角更大
+21，4:3和16:9的拍照尺寸和预览尺寸
+​    4 ：3预览尺寸为1440*1080
+​    16：9预览尺寸为1920*1080
+拍照尺寸需获取本机支持的所以拍照尺寸，然后选出比例和预览尺寸比例相近切最大的Size作为拍照尺寸
+22，回调的线程和创建回话创建请求之类的线程是不是同一线程
+是同一线程
+23，预览和录像的区别
+预览创建session会传两个Surface（也叫两路流）,一个预览Surface，一个拍照Surface,来自ImageReader
+录像创建session会传两个Surface（也叫两路流）,一个预览Surface，一个录像Surface,来自MediaRecorder
+24.在录像上拍照应该怎么实现
+创建录像Session的时候，传三个Surface(也叫三路流)，一个预览Surface，一个录像Surface,来自MediaRecorder，一个拍照Surface,来自ImageReader，
+然后录像过程中点击拍照时，调用session的capture方法
+25，拍照方向如何设置
+CaptureRequest.Builder.set(CaptureRequest.JPEG_ORIENTATION, rotation),
+rotation获取方法：利用手机传感器，检测手机目前方向，再结合Sensor目前方向，算出rotation
+26，如何获取Jpeg，YUV，Raw照片数据
+new ImageReader时传不同的ImageFormat就获取不同的图片数据：
+ImagerFormat.JPEG,ImagerFormat.YUV_420_888,ImagerFormat.RAW_SENSOR
+27，如何在开启相机的时候判断开启的是前置摄像头
+先拿到CameraCharacteristics,然后获取当前相机的LENS_FACING
+28. MediaRecorder设置哪些参数
+      音频源，视频源，录像格式，录像保存路径，录像宽高，编码格式，帧率 
+29,获取帧率范围：
+      CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES   
+30. CameraId怎么拿到
+    cameraManager.getCameraIdList();
+31. 怎么获取到闪关灯的状态：
+      CaptureResult#FLASH_STATE
+32，连拍实现API:
+    setRepeatingBurst();
+
+常用adb指令：
+adb logcat -c 清除Log
+adb logcat >test.txt抓取Log,保存到test.txt中
+
+adb root获取root权限
+adb remount获取设备是否连接
+adb shell进入文件系统
+adb shell > ls查看目录下的文件
+
+
+
+常用git指令：
+git分区：
+工作区--添加，编辑，删除，修改文件
+暂存区--git add 添加之后
+本地仓库--git commit -m "提交描述"
+
+git add .添加修改内容
+git commit -m "test add "提交修改内容
+git push 上传修改内容
+git pull更新本地代码
+
+git cherry-pick从另一个分支，选取某条提交更新到当前分支
+
+git checkout 切换分支
+git branch 创建分支
+
+git init 初始化仓库
+
+git status查看工作区状态
+
+git branch -a查看远端分支
+git branch查看本地分支
+git branch dev创建本地分支
+git checkout dev切换分支 
+git checkout -b dev创建并切换分支
+
+查看已有的配置信息：
+git config --list 命令
+$ git config --global user.name "runoob"用户名
+$ git config --global user.email test@runoob.com邮箱
+
+添加本地文件到github仓库：
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main重命名分支
+git remote add origin https://github.com/Timlius/gittest.git
+git remote add origin https://github.com/Timlius/GitDemo.git
+git push -u origin main
+
+git branch -D  hello 删除hello这个分支
+
+git log 查看历史提交记录
+git log --oneline查看简洁版本
+git log --graph图表形式查看
+git log --reverse --oneline逆向显示所有日志
+git log --author=Linus --oneline -5查看指定用户提交
+git blame <file> 以列表形式查看指定文件的历史修改记录
+
+git merge 合并分支
+
+1,使用git format-patch生成所需要的patch:
+当前分支所有超前master的提交：
+git format-patch -M master
+某次提交以后的所有:
+git format-patch 4e16 --4e16指的是commit名
+从根到指定提交的所有patch:
+git format-patch --root 4e16
+某两次提交之间的所有patch:
+git format-patch 365a..4e16 --365a和4e16分别对应两次提交的名称
+某次提交（含）之前的几次提交：
+git format-patch –n 07fe --n指patch数，07fe对应提交的名称
+故，单次提交即为：
+git format-patch -1 07fe
+git format-patch生成的补丁文件默认从1开始顺序编号，
+并使用对应提交信息中的第一行作为文件名。
+如果使用了-- numbered-files选项，则文件名只有编号，不包含提交信息；
+如果指定了--stdout选项，可指定输出位置，如当所有patch输出到一个文件；
+可指定-o <dir>指定patch的存放目录；
+
+2应用patch：
+先检查patch文件：git apply --stat newpatch.patch
+检查能否应用成功：git apply --check newpatch.patch
+打补丁：git am --signoff < newpatch.patch
+(使用-s或--signoff选项，可以commit信息中加入Signed-off-by信息)
+如果应用patch出现问题：
+比如，一个典型的git am失败，可能是这样的：
+$ git am PATCH
+Applying: PACTH DESCRIPTION
+error: patch failed: file.c:137
+error: file.c: patch does not apply
+error: patch failed: Makefile:24
+error: libavfilter/Makefile: patch does not apply
+Patch failed at 0001 PATCH DESCRIPTION
+When you have resolved this problem run "git am --resolved".
+If you would prefer to skip this patch, instead run "git am --skip".
+To restore the original branch and stop patching run "git am --abort".
+正如你所见，如果冲突发生，git只是输出上述信息，然后就停下来。一个小冲突会导致整个patch都不会被集成。
+处理这种问题的最简单方法是先使用 git am --abort，
+然后手动的添加此patch, patch -p1 < PATCH，
+手动解决掉代码冲突，最后使用 git commit -a 提交代码。
+但是这样做有个问题就是你会失去PATCH中原本包含的commit信息
+（比如From，Date，Subject，Signed-off-by等）。应该有一种更聪明的方法。
+在 .git/rebase-apply 目录下，存放着相应的补丁文件，名字是“0001” 
+（在更新的git版本中，存放补丁文件的目录名有所改变，这里使用的git版本是 1.7.4.1）。
+事实上，你可以使用 git apply 命令打patch（git apply 是git中的patch命令）。
+如同使用 patch -p1 命令时一样，然后手动解决代码冲突
+（检视生成的 .rej 文件，与冲突文件比较，修改冲突内容，并最终把文件加入到index中）：
+$ git apply PATCH --reject
+$ edit edit edit
+（译注：根据.rej文件手动解决所有冲突）
+$ git add FIXED_FILES
+$ git am --resolved
+就这么简单！
+想多一些解释，好吧。git am 并不改变index，
+你需要使用 git apply --reject 打patch（保存在 .git/rebase-apply），
+手动解决代码冲突，（译注：使用 git status 列出所有涉及文件），
+把所有文件（不仅仅是引起冲突的文件）添加到（git add）index，
+最后告诉 git am 你已经解决（--resolved）了问题。这样做的好处是你不需要重新编辑commit信息。
+而且，如果你正在打的是一系列patch（就是说你在打的是多个patch，比如 git am *.patch）
+你不需要使用 git am --abort，然后又 git am。
+
+MediaRecorder状态：    
+             录音录像时需要严格遵守状态图说明中的函数调用先后顺序， 
+             在不同的状态调用不同的函数，否则会出现异常。
+Initial：初始状态，
+         当使用new()方法创建一个MediaRecorder对象或者调用了reset()方法时，
+         该MediaRecorder对象处于Initial状态。在设定视频源或者音频源之后将转换为Initialized状态。
+         另外，在除Released状态外的其它状态通过调用reset()方法都可以使MediaRecorder进入该状态。
+Initialized：已初始化状态，
+             可以通过在Initial状态调用setAudioSource()或setVideoSource()方法进入该状态。
+			 在这个状态可以通过setOutputFormat()方法设置输出格式，
+			 此时MediaRecorder转换为DataSourceConfigured状态。另外，通过reset()方法进入Initial状态。
+DataSourceConfigured：数据源配置状态，
+          这期间可以设定编码方式、输出文件、屏幕旋转、预览显示等等。
+		  可以在Initialized状态通过setOutputFormat()方法进入该状态。
+		  另外，可以通过reset()方法回到Initial状态，或者通过prepare()方法到达Prepared状态。
+Prepared：就绪状态，
+        在DataSourceConfigured状态通过prepare()方法进入该状态。
+		在这个状态可以通过start()进入录制状态。
+		另外，可以通过reset()方法回到Initialized状态。
+Recording：录制状态，
+          可以在Prepared状态通过调用start()方法进入该状态。
+		  另外，它可以通过stop()方法或reset()方法回到Initial状态。
+Released：释放状态
+        （官方文档给出的词叫做Idle state 空闲状态），
+		可以通过在Initial状态调用release()方法来进入这个状态，
+		这时将会释放所有和MediaRecorder对象绑定的资源。
+Error：错误状态，
+       当错误发生的时候进入这个状态，它可以通过reset()方法进入Initial状态。
+	   
+	   
+1,opengl es
+2,SurfaceView，Textureview，GLsurfaceview三者的区别
+3,Context
+4,Application 
+5,jni-c、c++-java native interface 
+6，MediaRecorder状态
+
+接下来的安排：
+1，复习Camera基础
+2，复习android基础
+3，根据自己手机自带相机，优化自己实现的相机demo的UI
+4,实现倒计时拍照功能，倒计时带动画
+5，添加慢动作模式
+6，添加专业模式
+7，专业模式中实现手动调节iso,af，awb功能
+8，实现参考线功能
+9，设置中添加拍照剩余控制开关，使能控制拍照或录像时是否有提示音
+10.权限申请
+11，实现人脸检测功能--STATISTICS_FACES
+12，实现zoom变焦功能--zoom
+13，录像模式实现，录像过程中拍照，录像暂停功能
+14，jni编译so库，java传参给c++,c++传参给java
+15，opengl es实现黑白滤镜功能
+
+1，Video
+2,MVP/MVC/MVVM介绍
+3,手动测试，monkey测试
+4，相机老化测试,工厂测试
+5，稳定性，性能优化

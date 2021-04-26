@@ -1,0 +1,432 @@
+## Andriod
+
+##### 四层架构
+
+```
+（1）application：应用层，手机app
+（2）application farmwork：应用框架层
+（3）libraries:系统运行库
+（4）Linux kernel：Linux内核
+```
+
+Activity生命周期介绍:
+
+   七个生命周期方法：onCreate(),onStart(),<u>onResume()</u>,onPause(),onStop(),onDestory(),onRestart()
+
+***按Home键Activity生命周期：***
+
+onPause()-onStop(),点击进入：onRestart(),onStart(),onResume()。杀死进程：onDestory()
+
+***一个MainActivity跳转到另一个SecondActivity:***
+
+NO1:onPause()
+
+NO2:onCreate()-onStart-onResume
+
+NO1:onStop
+
+***从SecondActivity返回到MainActivity:***
+
+NO2:onPause
+
+NO1:onRestart-onStart-onResume
+
+NO2:onStop-onDestory
+
+##### Activity启动模式：
+
+```
+	1）标准模式(Standard)，每个activity都要创建一个实例
+	2）栈顶复用模式(SingleTop)：如果该activity在栈顶，直接通过onNewIntent调用，否则创建新的activity实例
+	3）栈内复用(SingleTask)：如果不在栈顶，销毁其他Activity，使其成为栈顶
+	4）单实例模式(SingleInstance)：单独为其创建栈，该栈只存在这一个activity，由于栈内复用，之后均不会创建新的activity，除非这个任务栈被系统销毁
+	任务栈（Task）：一种用来存放activity实例的容器，先进后出，
+
+启动模式设置方式：
+	Manifest.xml文件中指定：一种静态的指定方式，在Mainfest.xml文件里声明Activity的同时指定它的启动模式。
+	Intent中指定：一种动态的指定方式，在new一个Intent后，通过Intent的addFlags方法去动态指定一个启动模式。
+两种启动方式的区别：
+	（1）优先级：Intent中指定优先级更高。
+	（2）限定范围：
+		xml方式无法为activity直接指定flag_activity_clear_top标识
+		Intent方式无法为activity指定单例模式。
+```
+
+
+
+##### 四大组件
+
+1）activity——用户操作的可视化界面，用于表现功能（屏幕/窗口）
+
+```
+用户操作的可视化界面，用于表现功能（屏幕/窗口）
+```
+
+2）service——后台运行服务，不提供界面呈现
+
+参考链接：
+     	 https://www.runoob.com/android/android-services.html
+	 	 https://blog.csdn.net/qq_27061049/article/details/109366345
+
+```
+一个后台运行的组件，执行长时间运行且不需要用户交互的任务，运行在主线程中，依赖于创建服务时所在的应用程序进程，当这个进程被杀掉时，服务停止运行
+两种状态及生命周期：
+	startService()-启动服务，执行单一操作，不会将结果返回给调用方
+		--onCreate,onStart/onStartCommand,onDestory
+	bindService()-绑定服务，可以与多个服务进行交互，多个组件可以同时绑定到该服务，全部取消绑定后，该服务即会被销毁
+		--onCreate,onBind,onUnbind,onRebind,onDestory
+	两种启动方式：隐式启动、显示启动
+	如果在同一个应用中，两者都可以用；不同应用，只能用隐式启动
+```
+
+3）广播接收者（BroadcastReceiver）——接收广播
+
+  参考链接：https://www.cnblogs.com/ryq2014/p/10184555.html
+
+​					 https://blog.csdn.net/xchaha/article/details/80398620
+
+```
+Andriod组件间的通讯方式。
+	Andriod广播分为广播发送者和广播接收者
+	生命周期只有十秒左右，如果在onReceive()内做超过十秒的事情，就会报ANR程序无响应的错误信息。它的生命周期为从回调onReceive()方法开始到该方法返回结果后结束
+```
+
+4）内容提供者（ContentProvider）——支持多个应用存储和读取数据，相当于数据库
+
+```
+用来将本应用数据暴漏给另一个应用访问的工具
+```
+
+##### Andriod四大存储方式：
+
+```
+	1）SharedPreference-相机里面设置参数存储
+	2）ContentProvider--相机缩略图-ContentResolver
+	3）文件存储-data/SDcard
+	4）sqlite数据库存储
+```
+
+##### Handler的用法
+
+```
+两个线程之间的通信
+	原理：
+		MessageQueue--消息队列-存放通过 Handler 发送的消息，按照先进先出执行，内部使用的是单链表的结构
+		Looper-查找消息队列
+		Handler-发送和处理消息
+		Message-消息-Handler 发送和处理的消息，由 MessageQueue 管理。
+	一个线程里可以有多个Handler，有一个looper，一个MessageQueue
+	
+在应用启动时。会开一个UI线程，并且启动消息循环，应用不停地从该消息列表中取出、处理消息达到程序运行的效果。Looper负责就是创建一个MessageQueue，然后进入一个无限循环体不断从该MessageQueue中读取消息，而消息的创建者就是一个或多个Handler
+```
+
+##### 自定义View
+
+```
+分类：1，继承View，包括继承具体View比如Button，TextView
+	 2，继承ViewGroup，包括继承具体ViewGroup,比如LinearLayout
+  注：
+继承View/Button：选择实现onMeasure,必须实现onDraw
+继承ViewGroup/LinearLayout:必须实现onMeasure，必须实现onLayout，不用实现必须实现onDraw
+	xml中设置的View的宽高，可以通过两种方式拿到：
+	（1）onSizeChanged()
+	（2）onMeasure()--int width = MeasureSpec.getSize(widthMeasureSpec),
+					--int height = MeasureSpec.getSize(heightMeasureSpec),
+widthMeasureSpec/heightMeasureSpec里面封装了两个参数,前2个bit用于区分不同的布局模式(mode),后面30个bit存放的是尺寸的数据(size)
+```
+
+##### 动画介绍
+
+原文链接：https://blog.csdn.net/tongsiw/article/details/61614560
+
+```
+	帧动画（FrameAnimation）：将多张图片组合起来进行播放。跟节点是animation-list（动画列表），里面有一个或者多个item节点组成，oneshot属性表示是否只播放一次，true表示只会播放一次，false表示一直循环播放，内部用item节点声明一个动画帧，android:drawable指定此帧动画所对应的图片资源，android:druation代表此帧持续的时间，整数，单位为毫秒。
+	补间动画（TweenAnimation）：补间动画由Animation类来实现具体效果，包括平移（TranslateAnimation）、缩放（ScaleAnimation）、旋转（RotateAnimation）、透明度（AlphaAnimation）四个子类，四种变化，但补间动画只是达到其视觉效果，并不是真正的位置上的变化。
+	属性动画（PropertyAnimation）：最强大的动画，弥补了补间动画的缺点，实现位置+视觉的变化。
+	属性动画包括：ObjectAnimator和ValueAnimator
+```
+
+##### 事件分发机制
+
+```
+主要处理对屏幕的点击滑动等事件：
+Activity--dispatchTouchExent,onTouchEvent
+ViewGroup--dispatchTouchExent,onInterceptTouchEvent,onTouchEvent
+View--dispatchTouchEvent,onTouchEvent
+
+1）事件分发的对象是——点击（Touch）事件
+2）事件分发的本质——将点击事件（MotionEvent）传递到某个具体的View & 处理的整个过程
+	即 事件传递的过程 = 分发过程
+3）事件在哪些对象之间进行传递
+	Activity、ViewGrouop、View
+4）事件分发的顺序
+	Activity ——> ViewGroup ——> View
+5）事件分发过程由哪些方法协作完成？
+	dispatchTouchExent(),onInterceptTouchEvent()和onTouchEvent()
+		dispatchTouchExent——分发（传递）点击事件——当点击事件能够传递给当前View时调用
+		onTouchEvent——处理点击事件——在dispatchTouchExent()内部调用
+		onInterceptTouchEvent——判断是否拦截了某个事件--在只存在于ViewGroup的								dispatchTouchExent内部调用（只存在于ViewGroup，普通的View无该方法）
+```
+
+<img src="https://upload-images.jianshu.io/upload_images/944365-eeebede55f55b040.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp" alt="img"  />
+
+##### 常用的设计模式
+
+```
+	单例模式：一个类只有一个实例，而且自行实例化并向整个系统提供这个实例。
+	建造者模式：将一个复杂的构建与它的表示分离，使得同样的构造过程可以创建不同的展示。
+	观察者模式：定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都能得到通知并被自动更新。
+	策略者模式：在接口定义了一系列的算法，并将每个算法的具体实现封装起来，外部引用的是抽象接口，使得不同算法可以相互替换而不影响客户。
+	适配器模式：把一个类的接口转换为客户端所期待的另一种接口，从而使原本因接口不匹配而无法在一起工作的两个类能够在一起工作。
+	工厂模式：实例化对象，用工厂方法代替new方法的一种模式。定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。
+	装饰者模式：在不必改变原类文件和使用继承的情况下，动态地扩展一个对象的功能。它是通过创建一个包装对象，也就是装饰来包裹真实的对象。
+```
+
+##### 内存泄漏和溢出OOM介绍
+
+参考链接：https://www.cnblogs.com/andashu/p/6440944.html
+
+```
+内存泄漏：应该被回收的对象因为有其他对象引用，导致不能及时回收造成内存泄漏。（申请使用完的内存没有释放，导致虚拟机不能再次使用该内存，此时这段内存就泄露了，因为申请者不用了，而又不能被虚拟机（系统）分配给别人用）	
+内存溢出OOM：要申请内存大于系统剩余内存，就会报OOM（内存用完了）
+```
+
+##### 四大引用
+
+```
+四大引用：强引用，弱引用，软引用，虚引用
+
+	强引用：只要引用存在，垃圾回收器永远不会回收 	 
+例：Object obj = new Object();//可直接通过obj取得对应的对象 如obj.equels(new Object());
+而这样 obj对象对后面new Object的一个强引用，只有当obj这个引用被释放之后，对象才会被释放掉，这也是我们经常所用到的编码形式。
+
+	软引用：非必须引用，内存溢出之前进行回收
+例：Object obj = new Object();
+SoftReference<Object> sf = new SoftReference<Object>(obj);
+obj = null;
+sf.get();//有时候会返回null
+这时候sf是对obj的一个软引用，通过sf.get()方法可以取到这个对象，当然，当这个对象被标记为需要回收的对象时，则返回null；
+ 软引用主要用户实现类似缓存的功能，在内存足够的情况下直接通过软引用取值，无需从繁忙的真实来源查询数据，提升速度；当内存不足时，自动删除这部分缓存数据，从真正的来源查询这些数据。
+
+	弱引用：第二次垃圾回收时回收
+例：Object obj = new Object();
+WeakReference<Object> wf = new WeakReference<Object>(obj);
+obj = null;
+wf.get();//第二次返回null
+****  wf.isEnQueued();//返回是否被垃圾回收器标记为即将回收的垃圾  *****
+弱引用是在第二次垃圾回收时回收，短时间内通过弱引用取对应的数据，可以取到，当执行过第二次垃圾回收时，将返回null。
+弱引用主要用于监控对象是否已经被垃圾回收器标记为即将回收的垃圾，可以通过弱引用的isEnQueued方法返回对象是否被垃圾回收器标记。
+
+	虚引用：垃圾回收时回收，无法通过引用取到对象值
+例：Object obj = new Object();
+PhantomReference<Object> pf = new PhantomReference<Object>(obj);
+obj=null;
+pf.get();//永远返回null
+pf.isEnQueued();//返回是否从内存中已经删除
+虚引用是每次垃圾回收的时候都会被回收，通过虚引用的get方法永远获取到的数据为null，因此也被称为幽灵引用。
+虚引用主要用于检测对象是否已经从内存中删除。
+```
+
+
+
+## Camera
+
+##### 起预览
+
+```
+CameraManager--opencamera(id,statecallback,handler)
+CameraDevice.StateCallback--onopened(),/onDisconnected()/onError()
+创建session，调CameraDevice--createCaptureSession传入Surface
+成功调CameraCaptureSession--onConfigured()/配置失败调onConfigureFailed()
+最后调CameraCaptureSessison.setRepeatingRequest--template_preview
+```
+
+##### 拍照
+
+```
+前面四步一样，最后调CameraCaptureSession.capture--template_capture
+```
+
+##### 录像
+
+```
+点击开始录像，先关闭预览session，然后初始化MediaRecorder，设置音频、视频、输出格式及路径、视频帧率、音频/视频编码格式等参数，再创建录像session，录像session会下发预览surface和mediarecorder.suface两路流，所用模板为template_recorde，调用MediaRecorde.satrt()开始录像，停止调mediarecorde.stop()以及reset(),然后重新创建预览session
+```
+
+##### 如何下发参数，如何获取底层返回参数：
+
+```
+如下发闪光灯的打开和关闭，对焦模式下发 及获取AF/AE状态
+闪关灯打开：CaptureRequest.Builder.set(CaptureRequest.FLASH_MODE,
+								CaptureRequest.FLASH_MODE_TORCH);
+闪光灯关闭：CaptureRequest.Builder.set(CaptureRequest.FLASH_MODE,
+						CaptureRequest.FLASH_MODE_OFF);		
+CaptureRequest.Builder.set(CaptureRequest.SENSOR_SENSITIVITY,100);//感光度
+CaputureRequest.Builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,1001);曝光时间
+	Integer as = CaptureRequest.get(CaptureResult.CONTROL_AF_STATE);//控制状态
+	
+	FLASH_MODE,FLASH_MODE_TORCH		flash_mode,flash_mode_torch
+	FLASH_MODE,FLASH_MODE_OFF		flash_mode,flash_mode_off
+	SENSOR_SENSITIVITY				sensor_sensitivity
+	SENSOR_EXPOSURE_TIME			sensor_exposure_time
+	CONTROL_AF_STATE				control_af_state	//思dei特
+```
+
+##### 录像拍照模式切换
+
+```
+关闭拍照相机ID。关闭session，打开录像相机id
+```
+
+##### 分辨率切换
+
+```
+同时修改切换预览view和预览surface的宽高
+```
+
+##### 缩略图的实现
+
+```
+将底层的数据转换为bitmap，更新UI
+```
+
+##### 点击缩略图进入相册
+
+```
+启动打开图库包名的Activity，传递对应的图片uri
+```
+
+##### 拍照方向实现
+
+```
+通过手机方向传感器获取手机方向，然后根据手机方向设置拍照的CaptureRequest.JPEG_ORIENTAION   orientaion
+```
+
+##### 水印实现
+
+```
+用canvas画水印数据到底层返回的图片数据，然后保存图片数据
+```
+
+##### 图片格式介绍
+
+```
+yuv--一种颜色编码格式，y代表亮度信息，uv代表色彩信息
+yuv_420_888--Andriod里yuv的通用格式
+nv21--是yuv_420的一种，实际项目中，拿到yuv格式的数据需先转换为NV21，然后传给算法处理
+bitmap--位图，图片在内存中的表示方式
+raw--未经压缩的，sensor只出图像数据
+jpeg--一种压缩标准，保存的是被压缩处理过的图片数据
+```
+
+##### Surface，SurfaceTexture，ImageReader.Surface,MediaRecorder.Surface区别
+
+```
+Surface--用来存放图片数据，一个buffer
+SurfaceTexture--是Surface和OpenGL ES纹理的组合，用来将图像数据变成纹理供opengl es绘制
+ImageReader.Surface--用来捕获拍照数据
+MediaRecorder.Surface--用来捕获录像数据
+```
+
+##### 分辨率预览拉伸变形处理
+
+```
+需保证预览Surface和TextureView的宽高比一致
+```
+
+##### 自己实现的camera引用中用到几个线程
+
+```
+两个，一个UI线程，一个相机操作线程
+```
+
+##### 预览和录像的区别
+
+```
+预览创建的session传入一个预览surface和一个拍照surface，来自ImagerReader
+录像创建的session传入一个预览surface和一个录像surface，来自MediaRecorder
+```
+
+##### 在录象上拍照怎么实现
+
+```
+创建录像Session的时候，传入三个surface，(Surface,ImageReader.surface,MediaRecorder.surface)然后在录像过程中点击拍照，调用CameraCaptureSession的capture方法。
+```
+
+##### 拍照方向如何设置
+
+```
+CaptureRequset.Builder.set(CaptureRequest.JPEG_ORIENTAION,rotation),
+rotation获取方法：利用手机传感器，检测手机目前方向，再结合sensor目前方向，算出rotation
+```
+
+##### 如何获取jpeg，yuv，rwa照片格式
+
+```
+new ImageReader=ImageReader.newInstance时传不同的ImageFormat获取不同的图片格式,比如:
+ImageFormat.JPEG,ImageFormat.YUV_420_888,ImageFormat.RAW_SENSOR
+```
+
+##### 如何在开启相机时判断开启的时前置摄像头
+
+```
+先拿到CameraCharacteristics,然后获取当前相机的LENS_FACING(lens_facing)
+```
+
+##### MediaRecorder设置哪些参数
+
+```
+音频源，视频源，录像格式，保存路径，录像宽高，编码格式，帧率等
+```
+
+##### 获取帧率范围
+
+```
+CameraCharcteristics.control_ae_available_target_fps_ranges
+```
+
+##### CameraID怎么拿到
+
+```
+CameraManager.getCameraIdList();
+```
+
+##### 获取闪关灯状态
+
+```
+CpptureResult # flash_state
+```
+
+##### 连拍实现API
+
+```
+setRepeatingBurst()
+```
+
+##### 对焦模式下发
+
+```
+CaptureRequest.Builder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+							CameraMetadata.CONTROL_AF_TRIGGER_START)
+```
+
+##### 请求模板有哪些
+
+```
+template_preview		//预览模板
+template_record			//录像模板
+template_still_capture	//拍照模板
+```
+
+##### 获取拍照尺寸
+
+```
+拍照尺寸需获取本机支持的所以拍照尺寸，然后选出比例和预览尺寸比例相近切最大的Size作为拍照尺寸
+```
+
+##### 获取预览尺寸
+
+```
+创建方法，设置参数，获取本机支持的所有预览尺寸，宽高比例，屏幕宽度，
+```
+
